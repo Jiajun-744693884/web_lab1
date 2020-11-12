@@ -10,7 +10,7 @@ ps = nltk.stem.PorterStemmer()
 stop_words = set(nltk.corpus.stopwords.words('english'))
 stop_words.add('enron') # add more stop words here.
 
-def guess_charset(msg):
+def guess_charset(msg): #判断是什么格式的字符编码
     charset = msg.get_charset()
     if charset is None:
         content_type = msg.get('Content-Type', '').lower()
@@ -49,7 +49,7 @@ def parse_msg(msg) -> str:
 
     return final_str
 
-def decode_str(s):
+def decode_str(s):#decode成str
     value, charset = decode_header(s)[0]
     if charset:
         value = value.decode(charset)
@@ -83,3 +83,8 @@ def preprocess_email(filepath):
 
 
 
+filepath = path + '\\2'
+with open(filepath, 'r') as f:
+    msg_content = f.read()
+    msg = Parser().parsestr(msg_content)
+    print_info(msg)
