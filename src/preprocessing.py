@@ -1,9 +1,14 @@
-import os
 from email.parser import Parser
 from email.header import decode_header
 from email.utils import parseaddr
+import string
+import re
+import nltk
 
-path = '\web_lab1\dataset\maildir\\allen-p\\_sent_mail'
+ps = nltk.stem.PorterStemmer()
+#nltk.download('stopwords')
+stop_words = set(nltk.corpus.stopwords.words('english'))
+stop_words.add('enron') # add more stop words here.
 
 def guess_charset(msg):
     charset = msg.get_charset()
@@ -14,34 +19,35 @@ def guess_charset(msg):
             charset = content_type[pos + 8:].strip()
     return charset
 
-def print_info(msg, indent=0):
-    if indent == 0:
-        for header in ['From', 'To', 'Subject']:
-            value = msg.get(header, '')
-            if value:
-                if header=='Subject':
-                    value = decode_str(value)
-                else:
-                    hdr, addr = parseaddr(value)
-                    name = decode_str(hdr)
-                    value = u'%s <%s>' % (name, addr)
-            print('%s%s: %s' % ('  ' * indent, header, value))
-    if (msg.is_multipart()):
+def parse_msg(msg) -> str:
+    '''
+    :param msg: email message object
+    :return: a final string = msg header string + msg body string
+    '''
+    final_str = ''
+    subject = msg.get('Subject', '')
+    if subject:
+        subject = decode_str(subject)
+    subject.translate(str.maketrans(string.punctuation, ' '*len(string.punctuation)))
+    final_str += subject
+
+    if(msg.is_multipart()):
         parts = msg.get_payload()
         for n, part in enumerate(parts):
-            print('%spart %s' % ('  ' * indent, n))
-            print('%s--------------------' % ('  ' * indent))
-            print_info(part, indent + 1)
+            final_str += parse_msg(part)
     else:
         content_type = msg.get_content_type()
-        if content_type=='text/plain' or content_type=='text/html':
-            content = msg.get_payload(decode=True)
+        if content_type == 'text/plain' or content_type == 'text/html':
+            body = msg.get_payload(decode=True)
             charset = guess_charset(msg)
             if charset:
-                content = content.decode(charset)
-            print('%sText: %s' % ('  ' * indent, content + '...'))
+                body = body.decode(charset)
+            body.translate(str.maketrans(string.punctuation, ' '*len(string.punctuation)))
+            final_str += body
         else:
-            print('%sAttachment: %s' % ('  ' * indent, content_type))
+            pass # ignore non-text attachment
+
+    return final_str
 
 def decode_str(s):
     value, charset = decode_header(s)[0]
@@ -49,11 +55,31 @@ def decode_str(s):
         value = value.decode(charset)
     return value
 
-for root, dirs, files in os.walk(path):
-    for filename in files:
-        filepath = os.path.join(root,filename)
-        with open(filepath, 'r') as f:
-            msg_content = f.read()
-            msg = Parser().parsestr(msg_content)
-            print_info(msg,indent=0)
+def tokenize(s:str)->list:
+    '''
+    :param s: string
+    :return: token list after regex, stop words and stemming
+    '''
+    tokens = re.findall("[a-zA-Z]+", s); # 1. parse all english words out of article, ignore num
+    # tokens = s.split()
+    tokens = [t.lower() for t in tokens]
+    tokens = [t for t in tokens if t not in stop_words]
+    tokens = [ps.stem(t) for t in tokens] # 2. stem words
+    # tokens = [lemma.lemmatize(t) for t in tokens] # 3. lemmatize words.(Too SLOW!!!)
+    return tokens
+
+
+def preprocess_email(filepath):
+    '''
+    :param filepath: email path
+    :return: **list** of tokens in msg after regex, stop words filtering and stemming
+    '''
+    with open(filepath, 'r') as f:
+        msg_content = f.read()
+        msg = Parser().parsestr(msg_content)
+        pmsg = parse_msg(msg)
+        pmsg = tokenize(pmsg)
+        return pmsg
+
+
 
