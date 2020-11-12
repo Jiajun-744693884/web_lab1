@@ -8,7 +8,8 @@ import nltk
 ps = nltk.stem.PorterStemmer()
 #nltk.download('stopwords')
 stop_words = set(nltk.corpus.stopwords.words('english'))
-stop_words.add('enron') # add more stop words here.
+# add more stop words here.
+stop_words.update(['enron', 'cc', 'bcc', 'com', 'subject'])
 
 def guess_charset(msg): #判断是什么格式的字符编码
     charset = msg.get_charset()
@@ -60,11 +61,13 @@ def tokenize(s:str)->list:
     :param s: string
     :return: token list after regex, stop words and stemming
     '''
-    tokens = re.findall("[a-zA-Z]+", s); # 1. parse all english words out of article, ignore num
-    # tokens = s.split()
+    tokens = re.findall("[a-zA-Z]+", s);
     tokens = [t.lower() for t in tokens]
+
     tokens = [t for t in tokens if t not in stop_words]
-    tokens = [ps.stem(t) for t in tokens] # 2. stem words
+    tokens = [ps.stem(t) for t in tokens]
+
+    tokens = [t for t in tokens if len(t) > 1]
     # tokens = [lemma.lemmatize(t) for t in tokens] # 3. lemmatize words.(Too SLOW!!!)
     return tokens
 
@@ -80,11 +83,3 @@ def preprocess_email(filepath):
         pmsg = parse_msg(msg)
         pmsg = tokenize(pmsg)
         return pmsg
-
-
-
-filepath = path + '\\2'
-with open(filepath, 'r') as f:
-    msg_content = f.read()
-    msg = Parser().parsestr(msg_content)
-    print_info(msg)

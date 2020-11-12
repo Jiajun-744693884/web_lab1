@@ -6,7 +6,7 @@ from src.preprocessing import *
 class MyTestCase(unittest.TestCase):
     def test_preprocessing(self):
         root_path = '../../data/maildir/allen-p/_sent_mail/'
-        filename = '2.'
+        filename = '6.'
         filepath = os.path.join(root_path, filename)
         start = time.time()
         msg = preprocess_email(filepath)
