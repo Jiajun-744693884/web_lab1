@@ -57,9 +57,9 @@ def term_selection(root_path, select_n=1000):
 
     return selected_term_list
 
-def inverted_index_merge(inverted_index:dict, seletect_word_list, word_count, file_count):
+def inverted_index_merge(inverted_index:dict, selected_term_list, word_count, file_count):
     for word,count in word_count.items():
-        if word in seletect_word_list:
+        if word in selected_term_list:
             if word in inverted_index.keys():
                 inverted_index[word][0] += 1 # num of doc containing this word
                 inverted_index[word][1].append(file_count)
@@ -91,9 +91,9 @@ def build_inverted_index(root_path):
                 continue
             filepath = os.path.join(root, filename)
             try:
-                word_list = preprocess_email(filepath)
-                word_count = Counter(word_list)
-                inverted_index_dict = inverted_index_merge(inverted_index_dict, selected_term_list, word_count, file_count)
+                # word_list = preprocess_email(filepath)
+                # word_count = Counter(word_list)
+                # inverted_index_dict = inverted_index_merge(inverted_index_dict, selected_term_list, word_count, file_count)
                 file_index[file_count]=filepath #create_num2file # TODO: optimize this using Btree
                 file_count += 1
                 p.update(file_count)
@@ -102,10 +102,12 @@ def build_inverted_index(root_path):
                 print(f"[Exception] at {filepath}")
 
     p.finish()
-    with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
-        json.dump(inverted_index_dict, inverted_idx_json)
-    with open(store_path+'inverted_idx.pkl', "wb") as f:
-        pickle.dump(inverted_index_dict, f)
+    # with open(store_path+'num2file.json','w') as f:
+    #     json.dump(file_index, f)
+    # with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
+    #     json.dump(inverted_index_dict, inverted_idx_json)
+    # with open(store_path+'inverted_idx.pkl', "wb") as f:
+    #     pickle.dump(inverted_index_dict, f)
 
     return inverted_index_dict
 
