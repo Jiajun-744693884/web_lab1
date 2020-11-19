@@ -12,6 +12,13 @@ import pickle
 
 store_path = '../result/'
 def term_selection(root_path, select_n=1000):
+    '''
+    Traverse all files and summarize frequency of words.
+    Then select top ${select_n} words, dump them to a pickle file and return list of them. \n
+    :param root_path:
+    :param select_n: number of selected words
+    :return: list of selected terms
+    '''
     tf_dict = {}
     file_count = 0
     p = progressbar.ProgressBar()
@@ -42,10 +49,6 @@ def term_selection(root_path, select_n=1000):
     selected_term_list = list(tf_dict.keys())[0: select_n]
     p.finish()
     try:
-        # with open(root_path+'tf_dict', 'w') as f:
-        #     for item in  tf_dict:
-        #         f.write(f"{item}, ")
-
         with open(store_path+'selected_term_list.pkl', 'wb') as f:
             pickle.dump(selected_term_list, f)
 
@@ -54,41 +57,57 @@ def term_selection(root_path, select_n=1000):
 
     return selected_term_list
 
-
-
-
-def inverted_index_merge(inverted_index:dict,word_count, file_count):
+def inverted_index_merge(inverted_index:dict, seletect_word_list, word_count, file_count):
     for word,count in word_count.items():
-        if word in inverted_index.keys():
-            inverted_index[word][0] += 1 # num of doc containing this word
-            inverted_index[word][1].append(file_count)
-        else:
-            inverted_index[word] = []
-            inverted_index[word].append(1)
-            inverted_index[word].append([file_count])
+        if word in seletect_word_list:
+            if word in inverted_index.keys():
+                inverted_index[word][0] += 1 # num of doc containing this word
+                inverted_index[word][1].append(file_count)
+            else:
+                inverted_index[word] = []
+                inverted_index[word].append(1)
+                inverted_index[word].append([file_count])
     return inverted_index
 
-def training(root_path):
+def build_inverted_index(root_path):
+    '''
+    Build inverted index dictionary.
+    :param root_path:
+    :return:
+    '''
     file_index={} #dict
-    inverted_index = {} #todo:how to optimize our inverted_index on space and searching efficient
-    for root, dirs, files in os.walk(root_path):
-        if '.DS_Store' not in files:
-            file_count = 0
-            for filename in files:
-                filepath = os.path.join(root, filename)
-                try:
-                    word_list = preprocess_email(filepath)
-                    word_count = Counter(word_list)
-                    inverted_index = inverted_index_merge(inverted_index,word_count,file_count)
-                    file_index[file_count]=filepath #create_num2file # TODO: optimize this using Btree
-                    file_count += 1
-                except Exception:
-                    print(f"[Exception] at {filepath}")
+    inverted_index_dict = {} #todo:how to optimize our inverted_index on space and searching efficient
 
-            print(file_count)
-    with open(root_path+'inverted_idx.json', "w") as inverted_idx_json:
-        json.dump(inverted_index, inverted_idx_json)
-    return inverted_index
+    with open(store_path+'selected_term_list.pkl', 'rb') as f:
+        selected_term_list = pickle.load(f)
+
+    p = progressbar.ProgressBar()
+    file_total = 517408 + 5
+    p.start(file_total)
+    file_count = 0
+    for root, dirs, files in os.walk(root_path):
+        for filename in files:
+            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename:
+                continue
+            filepath = os.path.join(root, filename)
+            try:
+                word_list = preprocess_email(filepath)
+                word_count = Counter(word_list)
+                inverted_index_dict = inverted_index_merge(inverted_index_dict, selected_term_list, word_count, file_count)
+                file_index[file_count]=filepath #create_num2file # TODO: optimize this using Btree
+                file_count += 1
+                p.update(file_count)
+
+            except Exception:
+                print(f"[Exception] at {filepath}")
+
+    p.finish()
+    with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
+        json.dump(inverted_index_dict, inverted_idx_json)
+    with open(store_path+'inverted_idx.pkl', "wb") as f:
+        pickle.dump(inverted_index_dict, f)
+
+    return inverted_index_dict
 
 '''
 inverted_index:dict
@@ -97,5 +116,3 @@ inverted_index:dict
 list里面包括：1.出现的文档数,2.list,该list包含两个元素 (1)出现在哪个文档中(2)出现在这个文档中的次数
 {'word_a':[10,[[1,5],[2,7],[101,6]]]}
 '''
-path=".\\web_lab1\\dataset\\maildir\\allen-p\\_sent_mail"
-training(path)
