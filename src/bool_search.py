@@ -6,9 +6,9 @@
 import pickle
 import sys
 sys.path.append('./src')
-from preprocessing import tokenize
+from src.preprocessing import tokenize
 
-path = './result/allennp_inverted_idx.pkl'
+path = '../result/inverted_idx.pkl'
 with open(path,'rb') as file1:
     inverted_idx = pickle.load(file1)
 
