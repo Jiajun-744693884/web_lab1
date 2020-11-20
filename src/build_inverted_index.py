@@ -102,8 +102,8 @@ def build_inverted_index(root_path):
                 print(f"[Exception] at {filepath}")
 
     p.finish()
-    # with open(store_path+'num2file.json','w') as f:
-    #     json.dump(file_index, f)
+    with open(store_path+'num2file.pkl','wb') as f:
+        pickle.dump(file_index, f)
     # with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
     #     json.dump(inverted_index_dict, inverted_idx_json)
     # with open(store_path+'inverted_idx.pkl', "wb") as f:

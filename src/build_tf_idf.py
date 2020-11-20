@@ -10,7 +10,7 @@ import numpy as np
 import math
 
 store_path = '../result/'
-N = 517408
+N = 517401
 
 def calculate_tf_idf(tf, df):
     return (1 + math.log(tf, 10)) * (math.log(N / df, 10))
