@@ -22,17 +22,19 @@ def term_selection(root_path, select_n=1000):
     tf_dict = {}
     file_count = 0
     p = progressbar.ProgressBar()
-    file_total = 517408+5
+    file_total = get_file_num(root_path)
     p.start(file_total)
 
     for root, dirs, files in os.walk(root_path):
         for filename in files:
-            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename:
+            if 'word_count.pkl' not in filename:
                 continue
             filepath = os.path.join(root, filename)
             try:
-                word_list = preprocess_email(filepath)
-                word_count = Counter(word_list)
+                # word_list = preprocess_email(filepath)
+                # word_count = Counter(word_list)
+                with open(filepath, 'rb') as f:
+                    word_count = pickle.load(f)
                 for word, count in word_count.items():
                     if word in tf_dict.keys():
                         tf_dict[word] += count
@@ -58,6 +60,14 @@ def term_selection(root_path, select_n=1000):
     return selected_term_list
 
 def inverted_index_merge(inverted_index:dict, selected_term_list, word_count, file_count):
+    '''
+    Merge info of each file into final inverted index dictionary.
+    :param inverted_index:
+    :param selected_term_list:
+    :param word_count:
+    :param file_count:
+    :return:
+    '''
     for word,count in word_count.items():
         if word in selected_term_list:
             if word in inverted_index.keys():
@@ -69,7 +79,7 @@ def inverted_index_merge(inverted_index:dict, selected_term_list, word_count, fi
                 inverted_index[word].append([file_count])
     return inverted_index
 
-def build_inverted_index(root_path):
+def build_inverted_index(root_path, store_path):
     '''
     Build inverted index dictionary.
     :param root_path:
@@ -82,18 +92,20 @@ def build_inverted_index(root_path):
         selected_term_list = pickle.load(f)
 
     p = progressbar.ProgressBar()
-    file_total = 517408 + 5
+    file_total = get_file_num(root_path)
     p.start(file_total)
     file_count = 0
     for root, dirs, files in os.walk(root_path):
         for filename in files:
-            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename:
+            if 'word_count.pkl' not in filename:
                 continue
             filepath = os.path.join(root, filename)
             try:
                 # word_list = preprocess_email(filepath)
                 # word_count = Counter(word_list)
-                # inverted_index_dict = inverted_index_merge(inverted_index_dict, selected_term_list, word_count, file_count)
+                with open(filepath, 'rb') as f:
+                    word_count = pickle.load(f)
+                inverted_index_dict = inverted_index_merge(inverted_index_dict, selected_term_list, word_count, file_count)
                 file_index[file_count]=filepath #create_num2file # TODO: optimize this using Btree
                 file_count += 1
                 p.update(file_count)
@@ -104,10 +116,13 @@ def build_inverted_index(root_path):
     p.finish()
     with open(store_path+'num2file.pkl','wb') as f:
         pickle.dump(file_index, f)
-    # with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
-    #     json.dump(inverted_index_dict, inverted_idx_json)
-    # with open(store_path+'inverted_idx.pkl', "wb") as f:
-    #     pickle.dump(inverted_index_dict, f)
+    with open(store_path + 'num2file.json', 'w') as f:
+        json.dump(file_index, f)
+
+    with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
+        json.dump(inverted_index_dict, inverted_idx_json)
+    with open(store_path+'inverted_idx.pkl', "wb") as f:
+        pickle.dump(inverted_index_dict, f)
 
     return inverted_index_dict
 

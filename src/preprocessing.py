@@ -1,9 +1,14 @@
 from email.parser import Parser
 from email.header import decode_header
+from collections import Counter
 from email.utils import parseaddr
+import progressbar
+import pickle
 import string
 import re
+import os
 import nltk
+import json
 
 ps = nltk.stem.PorterStemmer()
 #nltk.download('stopwords')
@@ -99,3 +104,46 @@ def preprocess_email(filepath):
         pmsg = parse_msg(msg)
         pmsg = tokenize(pmsg)
         return pmsg
+
+def get_file_num(root_path):
+    '''
+    Get the total number of files under rootpath
+    :param rootpath:
+    :return:
+    '''
+    file_n = 0
+    for root, dirs, files in os.walk(root_path):
+        for filename in files:
+            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename:
+                continue
+            if 'word_count.pkl' not in filename:
+                continue
+            else:
+                file_n += 1
+    return file_n
+
+def preprocess_all_files(root_path):
+    file_count = 0
+    p = progressbar.ProgressBar()
+    file_total = get_file_num(root_path)
+    p.start(file_total)
+
+    for root, dirs, files in os.walk(root_path):
+        for filename in files:
+            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename or '.pkl' in filename:
+                continue
+            filepath = os.path.join(root, filename)
+            try:
+                word_list = preprocess_email(filepath)
+                word_count = Counter(word_list)
+                with open(filepath + '_word_count.pkl', 'wb') as f:
+                    pickle.dump(word_count, f)
+
+                file_count += 1
+                p.update(file_count)
+
+            except Exception as e:
+                print(f"[Exception] at {filepath}: {str(e)}")
+
+    p.finish()
+
