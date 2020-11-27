@@ -1,6 +1,6 @@
 #进行bool查询
 import pickle
-from preprocessing import tokenize
+from src.preprocessing import tokenize
 
 def bool_search(inverted_idx_path):#give inverted_idx
     #inverted_idx = './result/allennp_inverted_idx.pkl'

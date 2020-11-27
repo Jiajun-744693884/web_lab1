@@ -4,6 +4,7 @@ from src.preprocessing import *
 from src.build_inverted_index import *
 from src.build_tf_idf import *
 from src.tf_idf_search import *
+from src.bool_search import *
 
 class MyTestCase(unittest.TestCase):
     def test_all(self):
@@ -21,28 +22,24 @@ class MyTestCase(unittest.TestCase):
         # tf_idf_csc = build_tf_idf_matrix(root_path, store_path)
 
         # print(tf_idf_csc.toarray())
-
         with open(store_path + 'num2file.pkl', 'rb') as f:
             num2file_dict = pickle.load(f)
+        bool_search_answer = bool_search(store_path + 'inverted_idx.pkl')
+        for answer in bool_search_answer:
+            print(num2file_dict[answer])
         # query = "color concret"
         # query = 'hcfr part tile'
         # query = 'enronxg'
         query = 'new market'
         score_array, query_result = tf_idf_search(query, query_top_n=10, n_select_term=n_select_term, store_path=store_path)
-        print(query_result)
+        # print(query_result)
         for t in query_result:
              print(num2file_dict[t])
              print(score_array[0, t])
              print()
 
-        with open('../../data/maildir/shively-h/discussion_threads/7._word_count.pkl', 'rb') as f:
-            count_dict = pickle.load(f)
-        print(count_dict)
-
         end = time.time()
         print(end - start)
-
-
 
 
 

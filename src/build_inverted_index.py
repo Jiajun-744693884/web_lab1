@@ -1,7 +1,7 @@
 import os
 import json
 import progressbar
-from src.preprocessing import preprocess_email
+from src.preprocessing import preprocess_email, get_file_num
 from collections import Counter
 import pickle
 
@@ -43,7 +43,7 @@ def term_selection(root_path, select_n=1000):
 
                 file_count += 1
                 p.update(file_count)
-
+                # os.remove(filepaht)
             except Exception as e:
                 print(f"[Exception] at {filepath}: {str(e)}")
 
@@ -106,7 +106,7 @@ def build_inverted_index(root_path, store_path):
                 with open(filepath, 'rb') as f:
                     word_count = pickle.load(f)
                 inverted_index_dict = inverted_index_merge(inverted_index_dict, selected_term_list, word_count, file_count)
-                file_index[file_count]=filepath #create_num2file # TODO: optimize this using Btree
+                file_index[file_count]=filepath[:-15] #create_num2file # TODO: optimize this using Btree
                 file_count += 1
                 p.update(file_count)
 

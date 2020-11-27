@@ -19,7 +19,7 @@ def tf_idf_search(quest: str, query_top_n: int = 10, n_select_term: int = 1000, 
 
     term2num_dict = {selected_term_list[n]: n for n in range(len(selected_term_list))}
 
-    print(term2num_dict)
+    # print(term2num_dict)
 
     with open(store_path+'tf_idf_sparse_matrix.pkl', 'rb') as fm:
         tf_idf_csc_matrix = pickle.load(fm)
