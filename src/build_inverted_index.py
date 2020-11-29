@@ -43,7 +43,7 @@ def term_selection(root_path, select_n=1000):
 
                 file_count += 1
                 p.update(file_count)
-                # os.remove(filepaht)
+                
             except Exception as e:
                 print(f"[Exception] at {filepath}: {str(e)}")
 

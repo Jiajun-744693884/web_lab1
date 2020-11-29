@@ -52,6 +52,8 @@ def build_tf_idf_matrix(root_path, store_path):
                     row.append(term2num_dict[word])
                     data.append(calculate_tf_idf(tf, df, file_total))
             file_count += 1
+
+            # os.remove(filepath) #TODO
             try:
                 p.update(file_count)
             except Exception as e:
