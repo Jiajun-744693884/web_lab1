@@ -10,6 +10,9 @@ if __name__ == '__main__':
     store_path = '../result/'
     n_select_term = 1000
 
+    # do preprocessing to all files and save pkl
+    preprocess_all_files(root_path)
+
     Ndoc = get_file_num(root_path)
     print("[selecting term ...]")
     selected_term_list = term_selection(root_path, n_select_term, store_path)

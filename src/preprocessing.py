@@ -114,10 +114,10 @@ def get_file_num(root_path):
     file_n = 0
     for root, dirs, files in os.walk(root_path):
         for filename in files:
-            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename:
+            if '.json' in filename or '.DS_Store' in filename or '.txt' in filename or '.pkl' in filename:
                 continue
-            if 'word_count.pkl' not in filename:
-                continue
+            # if 'word_count.pkl' not in filename:
+            #     continue
             else:
                 file_n += 1
     return file_n
