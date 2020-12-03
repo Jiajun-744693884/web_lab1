@@ -5,13 +5,7 @@ from src.preprocessing import preprocess_email, get_file_num
 from collections import Counter
 import pickle
 
-# def file_traverse(path, func...)
-# {
-#     pass
-# }
-
-store_path = '../result/'
-def term_selection(root_path, select_n=1000):
+def term_selection(root_path, select_n=1000, store_path='../result'):
     '''
     Traverse all files and summarize frequency of words.
     Then select top ${select_n} words, dump them to a pickle file and return list of them. \n
@@ -116,11 +110,11 @@ def build_inverted_index(root_path, store_path):
     p.finish()
     with open(store_path+'num2file.pkl','wb') as f:
         pickle.dump(file_index, f)
-    with open(store_path + 'num2file.json', 'w') as f:
-        json.dump(file_index, f)
+    # with open(store_path + 'num2file.json', 'w') as f:
+    #     json.dump(file_index, f)
 
-    with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
-        json.dump(inverted_index_dict, inverted_idx_json)
+    # with open(store_path+'inverted_idx.json', "w") as inverted_idx_json:
+    #     json.dump(inverted_index_dict, inverted_idx_json)
     with open(store_path+'inverted_idx.pkl', "wb") as f:
         pickle.dump(inverted_index_dict, f)
 

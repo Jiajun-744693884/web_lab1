@@ -3,10 +3,10 @@ import pickle
 from scipy.sparse import csc_matrix
 from scipy import spatial
 from sklearn.preprocessing import normalize
-from src.preprocessing import tokenize
+from src.preprocessing import tokenize,get_file_num
 import math
 
-def tf_idf_search(quest: str, query_top_n: int = 10, n_select_term: int = 1000, store_path='../result/'):
+def tf_idf_search(quest: str, Ndoc=517401, query_top_n: int = 10, n_select_term: int = 1000, store_path='../result/'):
     '''
 
     :param quest: a string of quest words seperated by space. like: "AAA BB"
@@ -34,10 +34,9 @@ def tf_idf_search(quest: str, query_top_n: int = 10, n_select_term: int = 1000, 
     sqrt_n = np.sqrt(len(tokens))
     quest_vec = np.zeros(dtype=np.float, shape=(n_select_term, 1))
 
-    N = 517401
     for t in tokens:
         quest_vec[term2num_dict[t]] = 1.0
-        quest_vec[term2num_dict[t]] *= math.log(N*1.0 / inverted_idx_dict[t][0], 10)
+        quest_vec[term2num_dict[t]] *= math.log(Ndoc*1.0 / inverted_idx_dict[t][0], 10)
 
     quest_vec = normalize(quest_vec, norm='l2', axis=0)
 
